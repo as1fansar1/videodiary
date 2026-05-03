@@ -1,0 +1,302 @@
+/* ===== tokens ===== */
+:root {
+  --paper: #FBF7F0;
+  --ink: #1a1a1a;
+  --ink-soft: #8a8a82;
+  --accent: #FF8A6B;
+  --accent-soft: #FFD9CD;
+  --font-hand: 'Kalam', cursive;
+  --font-hand-bold: 'Kalam', cursive;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-hand);
+  color: var(--ink);
+  background: #efebe3;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== artboard inner page ===== */
+.rec, .lib {
+  width: 100%;
+  height: 100%;
+  background: var(--paper);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-hand);
+  overflow: hidden;
+  /* paper texture */
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(0,0,0,0.015) 0, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(0,0,0,0.015) 0, transparent 40%);
+}
+
+/* ===== shared header ===== */
+.rec-header, .lib .rec-header {
+  display: flex;
+  align-items: center;
+  padding: 18px 28px;
+  border-bottom: 2px dashed var(--ink-soft);
+  gap: 24px;
+}
+.logo {
+  font-family: var(--font-hand-bold);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.rec-nav {
+  display: flex;
+  gap: 18px;
+  margin-left: auto;
+  font-family: var(--font-hand);
+  font-size: 17px;
+}
+.rec-nav span {
+  cursor: pointer;
+  position: relative;
+}
+.rec-nav span:not(.muted) {
+  font-family: var(--font-hand-bold);
+  font-weight: 700;
+}
+.rec-nav span:not(.muted)::after {
+  content: "";
+  position: absolute;
+  left: -2px; right: -2px; bottom: -3px;
+  height: 5px;
+  background: var(--accent);
+  z-index: -1;
+  border-radius: 3px;
+  transform: rotate(-1deg);
+}
+.muted { color: var(--ink-soft); }
+
+/* ===== Record A: big stage ===== */
+.rec-stage {
+  flex: 1;
+  margin: 24px 28px 16px;
+  position: relative;
+  border-radius: 12px;
+  min-height: 0;
+}
+.rec-timer {
+  position: absolute;
+  bottom: 18px;
+  right: 18px;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  background: var(--paper);
+  padding: 4px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  z-index: 2;
+}
+.rec-timer-sm {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: var(--paper);
+  padding: 3px 8px;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  z-index: 2;
+}
+.rec-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 28px 28px;
+  flex-wrap: wrap;
+}
+.rec-record-btn-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 12px;
+}
+
+/* ===== Record B: split ===== */
+.rec-split {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 20px;
+  margin: 24px 28px 16px;
+  min-height: 0;
+}
+.rec-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 24px;
+  background: var(--accent-soft);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  position: relative;
+}
+.rec-prompt::before {
+  content: "";
+  position: absolute;
+  top: 8px; left: 8px; right: -4px; bottom: -4px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  z-index: -1;
+  background: var(--paper);
+}
+.rec-cam {
+  position: relative;
+  border-radius: 12px;
+  min-height: 0;
+}
+
+/* ===== Record C: minimal ===== */
+.rec-minimal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.rec-circle {
+  width: 320px;
+  height: 320px;
+  position: relative;
+  border-radius: 50%;
+}
+
+/* ===== Record D: screen + pip ===== */
+.rec-mode-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 14px 28px 0;
+  justify-content: center;
+}
+.rec-d .rec-stage {
+  margin-top: 16px;
+}
+.rec-pip {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  width: 130px;
+  height: 130px;
+  z-index: 3;
+}
+
+/* ===== Library shared ===== */
+.lib-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 28px;
+}
+
+/* Library A: grid */
+.lib-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 0 28px 28px;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Library B: timeline */
+.lib-timeline {
+  padding: 0 28px 28px;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+.lib-tl-group { margin-bottom: 24px; }
+.lib-tl-day {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-hand-bold);
+  font-size: 16px;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+  text-transform: lowercase;
+}
+
+/* Library C: calendar */
+.lib-cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  padding: 0 28px 28px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Library D: player + list */
+.lib-pl {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
+  padding: 0 28px 28px;
+  min-height: 0;
+}
+.lib-pl-list {
+  overflow: auto;
+  padding-right: 4px;
+}
+.lib-pl-player {
+  display: flex;
+  flex-direction: column;
+  padding-top: 0;
+}
+
+/* ===== hatch placeholder ===== */
+.sk-hatch {
+  background: rgba(0,0,0,0.02);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.sk-hatch-label {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-soft);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: var(--paper);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+/* ===== annotation note ===== */
+.sk-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-family: var(--font-hand);
+  font-size: 14px;
+  color: var(--ink-soft);
+  font-style: italic;
+  max-width: 140px;
+  line-height: 1.2;
+  pointer-events: none;
+  z-index: 100;
+}
+.sk-note[data-side="left"] {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+.sk-note-arrow { flex-shrink: 0; }

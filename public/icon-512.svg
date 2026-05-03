@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="108" fill="#FF8A6B"/>
+  <rect x="52" y="52" width="408" height="408" rx="76" fill="#FBF7F0"/>
+  <!-- Video camera body -->
+  <rect x="104" y="180" width="216" height="152" rx="26" fill="#1a1a1a"/>
+  <!-- Camera lens -->
+  <circle cx="212" cy="256" r="54" fill="#FF8A6B"/>
+  <circle cx="212" cy="256" r="35" fill="#1a1a1a"/>
+  <!-- Play triangle -->
+  <polygon points="196,237 196,275 234,256" fill="#FBF7F0"/>
+  <!-- Camera side wing -->
+  <rect x="320" y="202" width="88" height="32" rx="10" fill="#1a1a1a"/>
+  <rect x="320" y="278" width="88" height="32" rx="10" fill="#1a1a1a"/>
+  <!-- Record dot -->
+  <circle cx="364" cy="256" r="14" fill="#FF8A6B"/>
+</svg>
