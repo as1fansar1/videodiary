@@ -26,7 +26,10 @@ function captureFrame(video: HTMLVideoElement): Promise<Blob> {
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 360;
-    canvas.getContext('2d')!.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const context = canvas.getContext('2d')!;
+    context.translate(canvas.width, 0);
+    context.scale(-1, 1);
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
     canvas.toBlob((b) => resolve(b ?? new Blob()), 'image/jpeg', 0.8);
   });
 }
