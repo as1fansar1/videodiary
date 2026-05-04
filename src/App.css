@@ -780,11 +780,8 @@ a { color: inherit; text-decoration: none; }
 
   .record-split {
     grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto auto;
     gap: 8px;
-    flex: 1;
-    height: 100%;
-    min-height: 0;
   }
 
   .record-controls-fullspan {
@@ -793,10 +790,9 @@ a { color: inherit; text-decoration: none; }
 
   .record-stage {
     max-width: 100%;
-    height: 85%;
+    height: min(55.6svh, 520px);
     min-height: 0;
     aspect-ratio: auto;
-    align-self: start;
   }
 
   .prompt-card {
