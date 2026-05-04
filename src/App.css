@@ -770,13 +770,21 @@ a { color: inherit; text-decoration: none; }
   }
 
   .library, .record {
-    padding: 16px 16px 20px;
+    padding: 10px 16px 12px;
+  }
+
+  .record {
+    min-height: 0;
+    overflow: hidden;
   }
 
   .record-split {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 10px;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 8px;
+    flex: 1;
+    height: 100%;
+    min-height: 0;
   }
 
   .record-controls-fullspan {
@@ -785,27 +793,29 @@ a { color: inherit; text-decoration: none; }
 
   .record-stage {
     max-width: 100%;
-    aspect-ratio: 4 / 3;
+    height: 100%;
+    min-height: 0;
+    aspect-ratio: auto;
   }
 
   .prompt-card {
-    padding: 12px 14px;
-    gap: 4px;
+    padding: 6px 8px;
+    gap: 0;
   }
 
   .prompt-label {
-    font-size: 16px;
+    font-size: 13px;
   }
 
   .prompt-text {
-    font-size: 18px;
-    line-height: 1.2;
-    margin-top: 2px;
+    font-size: 15px;
+    line-height: 1.1;
+    margin-top: 0;
   }
 
   .prompt-actions {
-    margin-top: 4px;
-    gap: 10px;
+    margin-top: 0;
+    gap: 8px;
   }
 
   .countdown-number {
@@ -814,8 +824,21 @@ a { color: inherit; text-decoration: none; }
 
   /* Ensure 44px minimum touch targets */
   .record-btn {
-    width: 72px;
-    height: 72px;
+    width: 68px;
+    height: 68px;
+  }
+
+  .record-btn-inner {
+    width: 40px;
+    height: 40px;
+  }
+
+  .record-controls-idle {
+    gap: 12px;
+  }
+
+  .record-btn-group {
+    gap: 2px;
   }
 
   .btn-primary,
@@ -831,8 +854,16 @@ a { color: inherit; text-decoration: none; }
   }
 
   .prompt-btn {
-    min-height: 44px;
-    padding: 8px 12px;
+    min-height: 38px;
+    padding: 4px 9px;
+    font-size: 13px;
+  }
+
+  .prompt-link {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 13px;
   }
 
   .entry-menu-btn {
