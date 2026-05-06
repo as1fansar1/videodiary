@@ -42,6 +42,27 @@ function groupByWeek(entries: EntryWithUrls[]): { label: string; items: EntryWit
 
 type OverlayState = { entry: EntryWithUrls } | null;
 type DeleteState = { entry: EntryWithUrls } | null;
+type SaveFilePickerWindow = Window & {
+  showSaveFilePicker?: (options?: {
+    suggestedName?: string;
+    types?: Array<{
+      description: string;
+      accept: Record<string, string[]>;
+    }>;
+  }) => Promise<FileSystemFileHandle>;
+};
+
+function videoExtension(mimeType: string): string {
+  if (mimeType.includes('mp4')) return 'mp4';
+  if (mimeType.includes('ogg')) return 'ogv';
+  return 'webm';
+}
+
+function entryFileName(entry: Entry): string {
+  const date = new Date(entry.createdAt).toISOString().slice(0, 10);
+  const number = entry.number ? `-${entry.number}` : '';
+  return `diary-entry${number}-${date}.${videoExtension(entry.mimeType)}`;
+}
 
 export default function Library() {
   const [entries, setEntries] = useState<Entry[] | null>(null);
@@ -95,6 +116,46 @@ export default function Library() {
     setDeleteTarget(null);
     setOverlay(null);
     load();
+  };
+
+  const saveEntryAs = async (entry: EntryWithUrls) => {
+    const fileName = entryFileName(entry);
+    const pickerWindow = window as SaveFilePickerWindow;
+
+    if (pickerWindow.showSaveFilePicker) {
+      try {
+        const handle = await pickerWindow.showSaveFilePicker({
+          suggestedName: fileName,
+          types: [{
+            description: 'Video',
+            accept: { [entry.mimeType || 'video/webm']: [`.${videoExtension(entry.mimeType)}`] },
+          }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(entry.videoBlob);
+        await writable.close();
+        return;
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+      }
+    }
+
+    const file = new File([entry.videoBlob], fileName, { type: entry.mimeType || 'video/webm' });
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: fileName });
+        return;
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+      }
+    }
+
+    const link = document.createElement('a');
+    link.href = entry.videoUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   };
 
   return (
@@ -176,6 +237,16 @@ export default function Library() {
                         </button>
                         {openMenuId === entry.id && (
                           <div className="entry-menu">
+                            <button
+                              className="entry-menu-item"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenMenuId(null);
+                                void saveEntryAs(entry);
+                              }}
+                            >
+                              Save as
+                            </button>
                             <button
                               className="entry-menu-item entry-menu-item-danger"
                               onClick={(e) => {
