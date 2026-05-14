@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { addEntry, nextEntryNumber } from '../lib/db';
 import { pickRandomPrompt } from '../lib/prompts';
 import { recordStreakDay } from '../lib/streak';
+import { transcribe } from '../lib/transcribe';
+import { scoreEntry } from '../lib/sentiment';
 
 const MAX_SECONDS = 5 * 60;
 const COUNTDOWN_SECONDS = 3;
@@ -220,14 +222,22 @@ export default function Record() {
     const recorded = recordedBlobRef.current;
     if (!recorded) return;
     const number = await nextEntryNumber();
+    const entryId = crypto.randomUUID();
+    const createdAt = Date.now();
     await addEntry({
-      id: crypto.randomUUID(), number, createdAt: Date.now(),
+      id: entryId, number, createdAt,
       duration: recorded.duration, mimeType: recorded.mimeType,
       videoBlob: recorded.blob,
       thumbnailBlob: thumbnailBlobRef.current ?? new Blob(),
       prompt: recordedPromptRef.current,
     });
     recordStreakDay().catch(console.warn);
+    transcribe(recorded.blob)
+      .then((segments) => {
+        const text = segments.map((s) => s.text).join(' ').trim();
+        return scoreEntry(entryId, createdAt, recorded.duration, text, false);
+      })
+      .catch(console.warn);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     navigate('/');
   };
