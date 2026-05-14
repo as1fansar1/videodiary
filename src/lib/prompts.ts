@@ -1,45 +1,61 @@
-export const PROMPTS: readonly string[] = [
-  "what's one small win from today?",
-  "how are you feeling right now?",
-  "what's something you're grateful for today?",
-  "what's been on your mind this week?",
-  "describe a moment that made you smile today.",
-  "what's one thing you'd like to remember about today?",
-  "what's challenging you right now?",
-  "what did you learn today?",
-  "if today had a soundtrack, what would it be?",
-  "what's something kind you did for yourself today?",
-  "who did you connect with today?",
-  "what's one thing you're looking forward to?",
-  "what would you tell yourself a year ago?",
-  "what's a goal you're working toward?",
-  "what surprised you today?",
-  "describe your mood in three words.",
-  "what's something you want to let go of?",
-  "what's the best thing you ate this week?",
-  "what's a small habit you want to build?",
-  "what made you laugh recently?",
-  "what's a question you've been sitting with?",
-  "what's one thing you'd do differently this week?",
-  "describe a place you've been thinking about.",
-  "what's something you're proud of?",
-  "what does rest look like for you right now?",
-  "what's a story you keep telling yourself?",
-  "what's a tiny adventure you could take this week?",
-  "who deserves a thank-you from you?",
-  "what's one boundary you want to honor?",
-  "what's something you're curious about?",
-  "what would make tomorrow great?",
-  "what's a song stuck in your head?",
+// 30 daily prompts across gratitude / reflection / observation (10 each).
+// Deterministic selection by date so the same date always returns the same prompt.
+
+export type PromptCategory = 'gratitude' | 'reflection' | 'observation';
+
+export type Prompt = { id: number; category: PromptCategory; text: string };
+
+export const PROMPTS: Prompt[] = [
+  { id: 1, category: 'gratitude', text: 'What is one small thing today that made life a little better?' },
+  { id: 2, category: 'gratitude', text: 'Who are you grateful for right now, and why?' },
+  { id: 3, category: 'gratitude', text: 'Name a comfort you usually overlook.' },
+  { id: 4, category: 'gratitude', text: 'What body part are you thankful for today?' },
+  { id: 5, category: 'gratitude', text: 'A meal, a song, or a place that gave you joy this week.' },
+  { id: 6, category: 'gratitude', text: 'Recall a kindness someone showed you recently.' },
+  { id: 7, category: 'gratitude', text: 'What tool or object made your work easier this week?' },
+  { id: 8, category: 'gratitude', text: 'A skill you have that you take for granted.' },
+  { id: 9, category: 'gratitude', text: 'Something in nature you noticed today.' },
+  { id: 10, category: 'gratitude', text: 'A piece of past-you is paying off today. What is it?' },
+  { id: 11, category: 'reflection', text: 'What is the question you keep avoiding?' },
+  { id: 12, category: 'reflection', text: 'Where did you spend your energy today, and was it worth it?' },
+  { id: 13, category: 'reflection', text: 'What did you learn this week that surprised you?' },
+  { id: 14, category: 'reflection', text: 'Describe a moment you felt fully present.' },
+  { id: 15, category: 'reflection', text: 'What would you tell yourself from a month ago?' },
+  { id: 16, category: 'reflection', text: 'Where are you being too hard on yourself?' },
+  { id: 17, category: 'reflection', text: 'What habit is quietly shaping your life right now?' },
+  { id: 18, category: 'reflection', text: 'A belief you no longer hold. When did it change?' },
+  { id: 19, category: 'reflection', text: 'What did you say yes to that you wish you had said no to?' },
+  { id: 20, category: 'reflection', text: 'What does success look like for you this season?' },
+  { id: 21, category: 'observation', text: 'Describe the room you are in like a stranger would.' },
+  { id: 22, category: 'observation', text: 'What sound has been with you most today?' },
+  { id: 23, category: 'observation', text: 'A face you saw today that you cannot stop thinking about.' },
+  { id: 24, category: 'observation', text: 'What pattern did you notice this week?' },
+  { id: 25, category: 'observation', text: 'Describe the light right now.' },
+  { id: 26, category: 'observation', text: 'A conversation fragment you overheard recently.' },
+  { id: 27, category: 'observation', text: 'What is the weather of your mood today?' },
+  { id: 28, category: 'observation', text: 'What did your hands do most of today?' },
+  { id: 29, category: 'observation', text: 'A small change in your neighborhood you noticed.' },
+  { id: 30, category: 'observation', text: 'What is the most repeated word in your inner monologue today?' },
 ];
 
-export function pickRandomPrompt(exclude?: string | null): string {
-  if (PROMPTS.length === 1) return PROMPTS[0];
-  let next = PROMPTS[Math.floor(Math.random() * PROMPTS.length)];
-  // Avoid repeating the same prompt back-to-back when shuffling.
-  let safety = 10;
-  while (exclude && next === exclude && safety-- > 0) {
-    next = PROMPTS[Math.floor(Math.random() * PROMPTS.length)];
+export function todayKey(date: Date = new Date()): string {
+  const y = date.getFullYear();
+  const m = (date.getMonth() + 1).toString().padStart(2, '0');
+  const d = date.getDate().toString().padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function hashString(s: string): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
   }
-  return next;
+  return h >>> 0;
+}
+
+export function promptForDate(date: Date = new Date()): Prompt {
+  const key = todayKey(date);
+  const idx = hashString(key) % PROMPTS.length;
+  return PROMPTS[idx];
 }
