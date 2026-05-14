@@ -2,6 +2,15 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { listEntries, deleteEntry, storageUsedMB, type Entry } from '../lib/db';
 import PlaybackOverlay from '../components/PlaybackOverlay';
+import Throwback from '../components/Throwback';
+import DailyPrompt from '../components/DailyPrompt';
+import Streak from '../components/Streak';
+import MoodArc from '../components/MoodArc';
+import WeeklyRecap from '../components/WeeklyRecap';
+import ExportButton from '../components/ExportButton';
+import FaceGrid from '../components/FaceGrid';
+import SyncSettings from '../components/SyncSettings';
+import InstallNudge from '../components/InstallNudge';
 
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -58,7 +67,6 @@ export default function Library() {
 
   useEffect(() => { load(); }, []);
 
-  // Close overflow menu on outside click
   useEffect(() => {
     if (!openMenuId) return;
     const handler = (e: MouseEvent) => {
@@ -107,12 +115,18 @@ export default function Library() {
         </nav>
       </header>
 
+      <Throwback />
+      <section className="home-top">
+        <DailyPrompt />
+        <Streak />
+      </section>
+
       <main className="library">
         {entries === null ? null : entries.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-emoji">📔</div>
             <h1 className="empty-state-title">No entries yet</h1>
-            <p className="empty-state-text">Start your video diary — record your first entry.</p>
+            <p className="empty-state-text">Start your video diary, record your first entry.</p>
             <Link to="/record" className="cta">
               <span className="cta-dot" /> record first entry
             </Link>
@@ -152,7 +166,7 @@ export default function Library() {
                         </div>
                         <div className="entry-info">
                           <div className="entry-title">
-                            #{entry.number ?? '?'} — {formatEntryDate(entry.createdAt)}
+                            #{entry.number ?? '?'} {formatEntryDate(entry.createdAt)}
                           </div>
                           {entry.prompt && (
                             <div className="entry-prompt">{entry.prompt}</div>
@@ -198,10 +212,21 @@ export default function Library() {
         )}
       </main>
 
+      <section className="insights">
+        <h2 className="insights-title">insights</h2>
+        <MoodArc />
+        <WeeklyRecap />
+        <FaceGrid />
+        <ExportButton />
+        <SyncSettings />
+      </section>
+
+      <InstallNudge />
+
       {overlay && (
         <PlaybackOverlay
           url={overlay.entry.videoUrl}
-          title={`#${overlay.entry.number} — ${formatEntryDate(overlay.entry.createdAt)}`}
+          title={`#${overlay.entry.number} ${formatEntryDate(overlay.entry.createdAt)}`}
           onClose={() => setOverlay(null)}
         />
       )}
