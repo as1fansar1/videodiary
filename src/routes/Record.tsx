@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { addEntry, nextEntryNumber } from '../lib/db';
 import { pickRandomPrompt } from '../lib/prompts';
+import { recordStreakDay } from '../lib/streak';
 
 const MAX_SECONDS = 5 * 60;
 const COUNTDOWN_SECONDS = 3;
@@ -226,6 +227,7 @@ export default function Record() {
       thumbnailBlob: thumbnailBlobRef.current ?? new Blob(),
       prompt: recordedPromptRef.current,
     });
+    recordStreakDay().catch(console.warn);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     navigate('/');
   };
