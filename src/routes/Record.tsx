@@ -10,14 +10,18 @@ const MAX_SECONDS = 5 * 60;
 const COUNTDOWN_SECONDS = 3;
 
 type Phase = 'idle' | 'countdown' | 'recording' | 'preview';
+type RecordMode = 'video' | 'audio';
+const RECORD_MODE_STORAGE_KEY = 'videodiary:recordMode';
 
 interface Devices {
   cameras: MediaDeviceInfo[];
   mics: MediaDeviceInfo[];
 }
 
-function pickMimeType(): string {
-  const candidates = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'];
+function pickMimeType(mode: 'video' | 'audio' = 'video'): string {
+  const candidates = mode === 'audio'
+    ? ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4']
+    : ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'];
   for (const t of candidates) {
     if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(t)) return t;
   }
@@ -72,21 +76,32 @@ export default function Record() {
   const [devices, setDevices] = useState<Devices>({ cameras: [], mics: [] });
   const [selectedCameraId, setSelectedCameraId] = useState<string>('');
   const [selectedMicId, setSelectedMicId] = useState<string>('');
+  const [mode, setMode] = useState<RecordMode>(() => {
+    if (typeof localStorage === 'undefined') return 'video';
+    return (localStorage.getItem(RECORD_MODE_STORAGE_KEY) as RecordMode) || 'video';
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem(RECORD_MODE_STORAGE_KEY, mode); } catch { /* ignore */ }
+  }, [mode]);
 
   const recordedPromptRef = useRef<string | null>(null);
   const navigate = useNavigate();
 
-  const acquireStream = useCallback(async (cameraId?: string, micId?: string) => {
+  const acquireStream = useCallback(async (cameraId?: string, micId?: string, recordMode?: RecordMode) => {
     // Stop any existing tracks first
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
 
+    const activeMode: RecordMode = recordMode ?? mode;
     const constraints: MediaStreamConstraints = {
-      video: {
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        ...(cameraId ? { deviceId: { exact: cameraId } } : {}),
-      },
+      video: activeMode === 'audio'
+        ? false
+        : {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            ...(cameraId ? { deviceId: { exact: cameraId } } : {}),
+          },
       audio: micId ? { deviceId: { exact: micId } } : true,
     };
 
@@ -107,7 +122,7 @@ export default function Record() {
     if (audioTrack && !micId) {
       setSelectedMicId(audioTrack.getSettings().deviceId ?? '');
     }
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -146,6 +161,12 @@ export default function Record() {
     await acquireStream(selectedCameraId, deviceId).catch(() => {});
   };
 
+  const handleModeChange = async (next: RecordMode) => {
+    if (next === mode) return;
+    setMode(next);
+    await acquireStream(selectedCameraId, selectedMicId, next).catch(() => {});
+  };
+
   const retry = () => {
     setError(null);
     acquireStream().catch((e) => setError(e instanceof Error ? e.message : 'Could not access camera/mic'));
@@ -166,22 +187,27 @@ export default function Record() {
   const beginRecording = async () => {
     if (!streamRef.current) return;
     recordedPromptRef.current = prompt;
-    if (videoRef.current) thumbnailBlobRef.current = await captureFrame(videoRef.current);
+    if (mode === 'video' && videoRef.current) {
+      thumbnailBlobRef.current = await captureFrame(videoRef.current);
+    } else {
+      thumbnailBlobRef.current = null;
+    }
 
-    const mimeType = pickMimeType();
+    const mimeType = pickMimeType(mode);
     chunksRef.current = [];
     recordStartRef.current = Date.now();
 
-    const recorder = new MediaRecorder(
-      streamRef.current,
-      mimeType ? { mimeType, videoBitsPerSecond: 1_000_000 } : { videoBitsPerSecond: 1_000_000 },
-    );
+    const recorderOptions: MediaRecorderOptions = mode === 'audio'
+      ? (mimeType ? { mimeType } : {})
+      : (mimeType ? { mimeType, videoBitsPerSecond: 1_000_000 } : { videoBitsPerSecond: 1_000_000 });
+    const recorder = new MediaRecorder(streamRef.current, recorderOptions);
     recorder.ondataavailable = (ev) => { if (ev.data?.size > 0) chunksRef.current.push(ev.data); };
     recorder.onstop = () => {
       clearTimers();
       const duration = Math.round((Date.now() - recordStartRef.current) / 1000);
-      const blob = new Blob(chunksRef.current, { type: mimeType || 'video/webm' });
-      recordedBlobRef.current = { blob, mimeType: blob.type || mimeType || 'video/webm', duration };
+      const fallback = mode === 'audio' ? 'audio/webm' : 'video/webm';
+      const blob = new Blob(chunksRef.current, { type: mimeType || fallback });
+      recordedBlobRef.current = { blob, mimeType: blob.type || mimeType || fallback, duration };
       setPreviewUrl(URL.createObjectURL(blob));
       setPhase('preview');
     };
@@ -235,7 +261,7 @@ export default function Record() {
     transcribe(recorded.blob)
       .then((segments) => {
         const text = segments.map((s) => s.text).join(' ').trim();
-        return scoreEntry(entryId, createdAt, recorded.duration, text, false);
+        return scoreEntry(entryId, createdAt, recorded.duration, text, mode === 'audio');
       })
       .catch(console.warn);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -326,6 +352,24 @@ export default function Record() {
             <div className="record-controls record-controls-fullspan">
               {phase === 'idle' && (
                 <div className="record-controls-idle">
+                  <div className="record-mode" role="tablist" aria-label="record mode">
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={mode === 'video'}
+                      className={`record-mode-btn ${mode === 'video' ? 'active' : ''}`}
+                      onClick={() => handleModeChange('video')}
+                      data-testid="mode-video"
+                    >video</button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={mode === 'audio'}
+                      className={`record-mode-btn ${mode === 'audio' ? 'active' : ''}`}
+                      onClick={() => handleModeChange('audio')}
+                      data-testid="mode-audio"
+                    >audio only</button>
+                  </div>
                   {devices.mics.length > 1 && (
                     <select className="device-select" value={selectedMicId} onChange={(e) => handleMicChange(e.target.value)} aria-label="microphone">
                       {devices.mics.map((d) => (
