@@ -11,7 +11,13 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.10",
+    "@ffmpeg/util": "^0.12.1",
     "@xenova/transformers": "^2.17.2",
+    "chart.js": "^4.4.4",
+    "dexie": "^4.0.8",
+    "face-api.js": "^0.22.2",
+    "jszip": "^3.10.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.14.2"
